@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PI Tracker</title>
+  <link rel="stylesheet" href="css/bootstrap.css" type="text/css">
+  <link rel="stylesheet" href="css/style.css" type="text/css">
+  <link rel="stylesheet" href="css/font-awesome.css" type="text/css">
+</head>
+<body>
+
+  <script type="text/x-handlebars">
+
+    <div id="wrapper">
+
+        <!-- Navigation -->
+        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/#/">PI Tracker</a>
+            </div>
+            <!-- /.navbar-header -->
+
+            <ul class="nav navbar-top-links navbar-right">
+              <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                  <i class="fa fa-envelope fa-fw"></i>  <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-messages">
+                  <li>
+                    <a href="#">
+                      <div>
+                        <strong>John Smith</strong>
+                        <span class="pull-right text-muted">
+                          <em>Yesterday</em>
+                        </span>
+                      </div>
+                      <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eleifend...</div>
+                    </a>
+                  </li>
+                  <li class="divider"></li>
+                  <li>
+                    <a href="#">
+                      <div>
+                        <strong>John Smith</strong>
+                        <span class="pull-right text-muted">
+                          <em>Yesterday</em>
+                        </span>
+                      </div>
+                      <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eleifend...</div>
+                    </a>
+                  </li>
+                  <li class="divider"></li>
+                  <li>
+                    <a href="#">
+                      <div>
+                        <strong>John Smith</strong>
+                        <span class="pull-right text-muted">
+                          <em>Yesterday</em>
+                        </span>
+                      </div>
+                      <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eleifend...</div>
+                    </a>
+                  </li>
+                  <li class="divider"></li>
+                  <li>
+                    <a class="text-center" href="#">
+                      <strong>Read All Messages</strong>
+                      <i class="fa fa-angle-right"></i>
+                    </a>
+                  </li>
+                </ul>
+                <!-- /.dropdown-messages -->
+              </li>
+              <!-- /.dropdown -->
+              <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                  <i class="fa fa-tasks fa-fw"></i>  <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-tasks">
+                  <li>
+                    <a href="#">
+                      <div>
+                        <p>
+                          <strong>Task 1</strong>
+                          <span class="pull-right text-muted">40% Complete</span>
+                        </p>
+                        <div class="progress progress-striped active">
+                          <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 40%">
+                            <span class="sr-only">40% Complete (success)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="divider"></li>
+                  <li>
+                    <a href="#">
+                      <div>
+                        <p>
+                          <strong>Task 2</strong>
+                          <span class="pull-right text-muted">20% Complete</span>
+                        </p>
+                        <div class="progress progress-striped active">
+                          <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 20%">
+                            <span class="sr-only">20% Complete</span>
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="divider"></li>
+                  <li>
+                    <a href="#">
+                      <div>
+                        <p>
+                          <strong>Task 3</strong>
+                          <span class="pull-right text-muted">60% Complete</span>
+                        </p>
+                        <div class="progress progress-striped active">
+                          <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%">
+                            <span class="sr-only">60% Complete (warning)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="divider"></li>
+                  <li>
+                    <a href="#">
+                      <div>
+                        <p>
+                          <strong>Task 4</strong>
+                          <span class="pull-right text-muted">80% Complete</span>
+                        </p>
+                        <div class="progress progress-striped active">
+                          <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100" style="width: 80%">
+                            <span class="sr-only">80% Complete (danger)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="divider"></li>
+                  <li>
+                    <a class="text-center" href="#">
+                      <strong>See All Tasks</strong>
+                      <i class="fa fa-angle-right"></i>
+                    </a>
+                  </li>
+                </ul>
+                <!-- /.dropdown-tasks -->
+              </li>
+              <!-- /.dropdown -->
+              <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                  <i class="fa fa-bell fa-fw"></i>  <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-alerts">
+                  <li>
+                    <a href="#">
+                      <div>
+                        <i class="fa fa-comment fa-fw"></i> New Comment
+                        <span class="pull-right text-muted small">4 minutes ago</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="divider"></li>
+                  <li>
+                    <a href="#">
+                      <div>
+                        <i class="fa fa-twitter fa-fw"></i> 3 New Followers
+                        <span class="pull-right text-muted small">12 minutes ago</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="divider"></li>
+                  <li>
+                    <a href="#">
+                      <div>
+                        <i class="fa fa-envelope fa-fw"></i> Message Sent
+                        <span class="pull-right text-muted small">4 minutes ago</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="divider"></li>
+                  <li>
+                    <a href="#">
+                      <div>
+                        <i class="fa fa-tasks fa-fw"></i> New Task
+                        <span class="pull-right text-muted small">4 minutes ago</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="divider"></li>
+                  <li>
+                    <a href="#">
+                      <div>
+                        <i class="fa fa-upload fa-fw"></i> Server Rebooted
+                        <span class="pull-right text-muted small">4 minutes ago</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="divider"></li>
+                  <li>
+                    <a class="text-center" href="#">
+                      <strong>See All Alerts</strong>
+                      <i class="fa fa-angle-right"></i>
+                    </a>
+                  </li>
+                </ul>
+                <!-- /.dropdown-alerts -->
+              </li>
+              <!-- /.dropdown -->
+              <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                  <i class="fa fa-user fa-fw"></i>  <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-user">
+                  <li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
+                  </li>
+                  <li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
+                  </li>
+                  <li class="divider"></li>
+                  <li><a href="login.html"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                  </li>
+                </ul>
+                <!-- /.dropdown-user -->
+              </li>
+              <!-- /.dropdown -->
+            </ul>
+            <!-- /.navbar-top-links -->
+
+            <!-- Left Navigation -->
+            <div class="navbar-default sidebar" role="navigation">
+              <div class="sidebar-nav navbar-collapse">
+                <ul class="nav" id="side-menu">
+                  <li class="sidebar-search">
+                    <div class="input-group custom-search-form">
+                      <input type="text" class="form-control" placeholder="Search...">
+                      <span class="input-group-btn">
+                        <button class="btn btn-default" type="button">
+                          <i class="fa fa-search"></i>
+                        </button>
+                      </span>
+                    </div>
+                    <!-- /input-group -->
+                  </li>
+                  <li>
+                    <a class="active" href="/#/"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
+                  </li>
+                  <li>
+		    {{#link-to 'items.new'}}New Item{{/link-to}}
+                  </li>
+                  <li>
+		    {{#link-to 'items'}}All Items{{/link-to}}
+                  </li>
+                  <li>
+		    {{#link-to 'projects.new'}}New Project{{/link-to}}
+                  </li>
+                  <li>
+		    {{#link-to 'projects'}}All Projects{{/link-to}}
+                  </li>
+                </ul>
+              </div>
+              <!-- /.sidebar-collapse -->
+            </div>
+            <!-- /.navbar-static-side -->
+        </nav>
+	
+        <div id="page-wrapper">
+          <div class="row">
+            <div class="col-lg-12">
+
+	      {{ outlet }}
+
+            </div>
+            <!-- /.col-lg-12 -->
+          </div>
+
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+  </script>
+
+  <script type="text/x-handlebars" data-template-name="index">
+
+    <h1 class="page-header">Dashboard</h1>
+
+  </script>
+
+  <script type="text/x-handlebars" data-template-name="projects">
+    {{ outlet }}
+  </script>
+
+  <script type="text/x-handlebars" data-template-name="projects/index">
+    <h1 class="page-header">All Projects</h1>
+    <ul>
+      {{#each model}}
+      <li>{{#link-to 'project' id }}{{ name }}{{/link-to}} - {{ description }}</li>
+      {{/each}}
+    </ul>
+  </script>
+
+  <script type="text/x-handlebars" data-template-name="projects/new">
+    <h1 class="page-header">New Project</h1>
+    <form class="form-horizontal" role="form">
+      <div class="form-group form-group-lg">
+	<label class="col-sm-2 control-label" for="name">Name</label>
+	<div class="col-sm-10">
+	  {{input valueBinding="name" id="name" placeholder="Name" required="true" class="form-control" }}
+	</div>
+      </div>
+      <div class="form-group form-group-lg">
+	<label class="col-sm-2 control-label" for="name">Description</label>
+	<div class="col-sm-10">
+	  {{textarea valueBinding="description" id="description" rows="3" placeholder="Description" required="true" class="form-control" }}
+	</div>
+      </div>
+
+      <a class="btn btn-success btn-lg" href="#" role="button" {{action save}}>Create Project</a>
+
+    </form>
+
+  </script>
+
+  <script type="text/x-handlebars" data-template-name="project">
+    {{ outlet }}
+  </script>
+
+  <script type="text/x-handlebars" data-template-name="project/index">
+    <h1 class="page-header">{{ name }}</h1>
+    <p>
+      {{ description }}
+    </p>
+    <p>
+      {{#link-to 'project.edit'}}Edit{{/link-to}}
+    </p>
+  </script>
+
+  <script type="text/x-handlebars" data-template-name="project/edit">
+    <h1 class="page-header">Edit Project</h1>
+    <form class="form-horizontal" role="form">
+      <div class="form-group form-group-lg">
+	<label class="col-sm-2 control-label" for="name">Name</label>
+	<div class="col-sm-10">
+	  {{input valueBinding="name" id="name" placeholder="Name" required="true" class="form-control" }}
+	</div>
+      </div>
+      <div class="form-group form-group-lg">
+	<label class="col-sm-2 control-label" for="name">Description</label>
+	<div class="col-sm-10">
+	  {{textarea valueBinding="description" id="description" rows="3" placeholder="Description" required="true" class="form-control" }}
+	</div>
+      </div>
+
+      <a class="btn btn-success btn-lg" href="#" role="button" {{action save model}}>Update Project</a>
+
+    </form>
+
+  </script>
+
+  <script type="text/x-handlebars" data-template-name="project/archive">
+    Archive {{ name }} ? <br />
+    <button {{action 'save' model}}>Update Project</button>
+  </script>
+
+  <script type="text/x-handlebars" data-template-name="items">
+    {{outlet}}
+  </script>
+
+  <script type="text/x-handlebars" data-template-name="items/index">
+    <h1 class="page-header">All Items</h1>
+    <ul>
+      {{#each model}}
+      <li>{{#link-to 'item' id }}{{ title }}{{/link-to}}</li>
+      {{/each}}
+    </ul>
+  </script>
+
+  <script type="text/x-handlebars" data-template-name="items/new">
+    <h1 class="page-header">New Item</h1>
+    <form class="form-horizontal" role="form">
+      <div class="form-group form-group-lg">
+	<label class="col-sm-2 control-label" for="name">Title</label>
+	<div class="col-sm-10">
+	  {{input valueBinding="title" id="title" placeholder="Title" required="true" class="form-control" }}<br />
+	</div>
+      </div>
+      <div class="form-group form-group-lg">
+	<label class="col-sm-2 control-label" for="name">Description</label>
+	<div class="col-sm-10">
+	  {{textarea valueBinding="description" id="description" rows="3" placeholder="Description" required="true" class="form-control" }}
+	</div>
+      </div>
+
+      <a class="btn btn-success btn-lg" href="#" role="button" {{action save}}>Create Item</a>
+
+    </form>
+
+  </script>
+
+  <script type="text/x-handlebars" data-template-name="item">
+    {{ outlet }}
+  </script>
+
+  <script type="text/x-handlebars" data-template-name="item/index">
+    <h1 class="page-header">{{ title }}</h1>
+    <p>
+      {{ description }}
+    </p>
+    <p>
+      {{#link-to 'item.edit'}}Edit{{/link-to}}
+    </p>
+  </script>
+
+  <script type="text/x-handlebars" data-template-name="item/edit">
+    <h1 class="page-header">Edit Item</h1>
+    <form class="form-horizontal" role="form">
+      <div class="form-group form-group-lg">
+	<label class="col-sm-2 control-label" for="name">Title</label>
+	<div class="col-sm-10">
+	  {{input valueBinding="title" id="title" placeholder="Title" required="true" class="form-control" }}<br />
+	</div>
+      </div>
+      <div class="form-group form-group-lg">
+	<label class="col-sm-2 control-label" for="name">Description</label>
+	<div class="col-sm-10">
+	  {{textarea valueBinding="description" id="description" rows="3" placeholder="Description" required="true" class="form-control" }}
+	</div>
+      </div>
+
+      <a class="btn btn-success btn-lg" href="#" role="button" {{action save model}}>Create Item</a>
+
+    </form>
+  </script>
+
+  <script type="text/x-handlebars" id="login">
+
+    <form class="form-signin" {{action login on="submit"}}>
+
+      {{#if errorMessage}}
+      <div class="alert alert-danger alert-dismissible" role="alert">
+	<button type="button" class="close" data-dismiss="alert">
+	  <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+	</button>
+	<strong>Warning!</strong> {{errorMessage}}
+      </div>
+      {{/if}}
+
+      <h2 class="form-signin-heading">Log In</h2>
+      {{input value=username type="text" class="form-control" placeholder="Username" required="required" autofocus="autofocus"}}
+      {{input value=password type="password" class="form-control" placeholder="Password" required="required"}}
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" value="remember-me"> Remember me
+        </label>
+      </div>
+      {{input class="btn btn-lg btn-primary btn-block" type="submit" value="Log In"}}
+
+    </form>
+
+  </script>
+
+  <script src="js/lib/jquery.js"></script>
+  <script src="js/lib/bootstrap.js"></script>
+  <script src="js/lib/handlebars.js"></script>
+  <script src="js/lib/ember.js"></script>
+  <script src="js/lib/ember-data.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

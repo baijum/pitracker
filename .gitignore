@@ -1,0 +1,14 @@
+*~
+.vendor/
+tmp/
+gin-bin
+pitracker
+.env.sh
+.ropeproject/
+__pycache__/
+.installed.cfg
+bin/
+develop-eggs/
+eggs/
+test/acceptance/config.ini
+test/acceptance/init_docker.sh

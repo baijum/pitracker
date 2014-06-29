@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [[ $1 == "run" ]]; then
+  docker.io run -p 5432:5432 -d postgres:9.3
+  sleep 5
+fi
+
+psql -h 127.0.0.1 -U postgres -c "CREATE USER baiju WITH PASSWORD 'passwd';"
+psql -h 127.0.0.1 -U postgres -c "CREATE DATABASE pitrackerlocal;"
+psql -h 127.0.0.1 -U baiju -d pitrackerlocal -f ${buildout:directory}/scripts/pitracker-db/schema.sql
