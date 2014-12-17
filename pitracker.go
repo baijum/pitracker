@@ -3,26 +3,34 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
-	"sync"
 	"strconv"
 	"time"
 
+	"github.com/baijum/plus"
 	"github.com/codegangsta/negroni"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
 
-type TokenStore struct {
-	tokens map[string]string
-	mu     sync.RWMutex
+var (
+	signingKey   = "SOME KEY"
+	privateKey   []byte
+	publicKey    []byte
+	clientID     string
+	clientSecret string
+)
+
+type AuthToken struct {
+	Success bool   `json:"success"`
+	Token   string `json:"token"`
+	Message string `json:"message"`
 }
 
 type Project struct {
@@ -35,65 +43,37 @@ type Item struct {
 	Description string `json:"description"`
 }
 
-func (s *TokenStore) Get(token string) string {
-	if IsRedisStore == true {
-		t, err := redis.String(RC.Do("GET", token))
-		if err != nil {
-			log.Println(err)
-		}
-		return t
+type Name struct {
+	FamilyName string `json:"familyName"`
+	GivenName  string `json:"givenName"`
+}
+
+type Email struct {
+	Value string `json:"value"`
+	Type  string `json:"type"`
+}
+
+type Profile struct {
+	DisplayName string  `json:"displayName"`
+	Name        Name    `json:"name"`
+	Emails      []Email `json:"emails"`
+	Gender      string  `json:"gender"`
+	URL         string  `json:"url"`
+}
+
+func AuthMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	token, err := jwt.ParseFromRequest(r, func(token *jwt.Token) (interface{}, error) {
+		return publicKey, nil
+	})
+	if err == nil && token.Valid {
+		next(w, r)
 	} else {
-		s.mu.RLock()
-		defer s.mu.RUnlock()
-		log.Printf("%+v", s)
-		t := s.tokens[token]
-		log.Printf("Token requested: %s, %#v", token, token)
-		log.Printf("Token retrieved: %s", t)
-		return t
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("Unauthorized"))
 	}
 }
 
-func (s *TokenStore) Set(token, user string) bool {
-	if IsRedisStore == true {
-		_, err := redis.String(RC.Do("GET", token))
-		if err != nil {
-			RC.Do("SET", token, user)
-			return true
-		} else {
-			return false
-		}
-	} else {
-		s.mu.Lock()
-		defer s.mu.Unlock()
-		_, present := s.tokens[token]
-		if present {
-			return false
-		}
-		s.tokens[token] = user
-		return true
-	}
-}
-
-func (s *TokenStore) Put(username string) string {
-	token := jwt.New(jwt.GetSigningMethod("HS256"))
-
-	token.Claims["username"] = username
-	token.Claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
-
-	tokenString, _ := token.SignedString(rsaPrivateKey)
-	for {
-		if s.Set(tokenString, username) {
-			return tokenString
-		}
-	}
-}
-
-func NewTokenStore() *TokenStore {
-	return &TokenStore{
-		tokens: make(map[string]string),
-	}
-}
-
+/*
 func Authorize(w http.ResponseWriter, r *http.Request, p string) error {
 	tokenString := r.Header.Get("token")
 
@@ -108,44 +88,82 @@ func Authorize(w http.ResponseWriter, r *http.Request, p string) error {
 		return nil
 	}
 }
-
-type AuthToken struct {
-	Success bool   `json:"success"`
-	Token   string `json:"token"`
-	Message string `json:"message"`
-}
+*/
 
 func AuthHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	username := r.PostFormValue("username")
-	password := r.PostFormValue("password")
-
-	var realPassword string
-	DB.QueryRow(`SELECT password
-         FROM "member"
-         WHERE username = $1`, username).Scan(&realPassword)
-
-	if password == realPassword {
-		tokenString := TS.Put(username)
-		log.Println(tokenString)
-		authToken, err := json.Marshal(AuthToken{true, tokenString, "Logged in"})
-		if err != nil {
-			log.Fatal("Unable to marhal token")
-		}
-		log.Printf("%s", authToken)
-		w.Write([]byte(authToken))
-		token := TS.Get(tokenString)
-		log.Printf("TokenString2: %+v", tokenString)
-		log.Printf("Token2: %+v", token)
-
-	} else {
-		authToken, err := json.Marshal(AuthToken{false, "", "Incorrect username or password"})
-		if err != nil {
-			log.Fatal("Unable to marhal token")
-		}
-		w.Write(authToken)
+	x, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Fatal("Error reading code in the request body: ", err)
 	}
+	code := string(x)
+
+	accessToken, idToken, err := plus.GetTokens(code, clientID, clientSecret)
+	if err != nil {
+		log.Fatal("error exchanging code for access token: ", err)
+	}
+	gplusID, err := plus.DecodeIDToken(idToken)
+	if err != nil {
+		log.Fatal("Error decoding ID token: ", err)
+	}
+
+	baseUrl := "https://www.googleapis.com/plus/v1"
+	apiFull := fmt.Sprintf("%s/people/%s", baseUrl, gplusID)
+
+	url := fmt.Sprintf("%s?access_token=%s", apiFull, accessToken)
+
+	fmt.Println(url)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Fatal(err, "Error", 500)
+	}
+
+	defer resp.Body.Close()
+
+	var profile Profile
+
+	decoder := json.NewDecoder(resp.Body)
+
+	err = decoder.Decode(&profile)
+
+	if err != nil {
+		log.Fatal("unable to decode body: ", err)
+	}
+	fmt.Printf("profile: %v\n", profile)
+	fmt.Printf("gplusID: %s\n", gplusID)
+	var displayName string
+	var id int
+	DB.QueryRow(`SELECT displayname
+		from "member"
+		WHERE plusid = $1`, gplusID).Scan(&displayName)
+
+	if displayName == "" {
+		fmt.Printf("displayName: %s\n", displayName)
+		DB.QueryRow(`INSERT INTO "member" (
+			plusid, email, displayname,
+			familyname, givenname,
+			gender, url) VALUES ($1, $2, $3, $4, $5, $6, $7)
+			RETURNING id`,
+			gplusID, profile.Emails[0].Value, profile.DisplayName,
+			profile.Name.FamilyName, profile.Name.GivenName,
+			profile.Gender, profile.URL).Scan(&id)
+
+	}
+	token := jwt.New(jwt.GetSigningMethod("RS256"))
+	token.Claims["sub"] = gplusID
+	token.Claims["exp"] = time.Now().Add(time.Hour * 24 * 7).Unix()
+	tokenString, _ := token.SignedString(privateKey)
+	fmt.Printf("gplusID: %v\n", gplusID)
+	fmt.Printf("tokenString: %v\n", tokenString)
+
+	authToken, err := json.Marshal(AuthToken{true, tokenString, "Logged in"})
+	if err != nil {
+		log.Fatal("Unable to marhal token")
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(authToken))
 }
 
 func CreateProjectHandler(w http.ResponseWriter, r *http.Request) {
@@ -185,7 +203,7 @@ func CreateProjectHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(out)
 }
 
-func GetAllProjectsHandler(w http.ResponseWriter, r *http.Request) {
+func GetAllProjectsHandler(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	var (
 		id          int
 		name        string
@@ -327,7 +345,6 @@ func ArchiveProjectHandler(w http.ResponseWriter, r *http.Request) {
 		id)
 }
 
-
 func GetAllItemsHandler(w http.ResponseWriter, r *http.Request) {
 	var (
 		id          int
@@ -456,9 +473,6 @@ func UpdateItemHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 var DB *sql.DB
-var TS = NewTokenStore()
-var RC redis.Conn
-var IsRedisStore bool = false
 
 func openDB() {
 	var err error
@@ -474,16 +488,14 @@ func openDB() {
 
 }
 
-func openRedisConn() {
-	var err error
-	RC, err = redis.Dial("tcp", ":6379")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 var rsaPrivateKey []byte
+
+func init() {
+	privateKey, _ = ioutil.ReadFile("test/id_rsa")
+	publicKey, _ = ioutil.ReadFile("test/id_rsa.pub")
+	clientID = os.Getenv("GPLUS_CLIENT_ID")
+	clientSecret = os.Getenv("GPLUS_CLIENT_SECRET")
+}
 
 func main() {
 	var err error
@@ -495,12 +507,6 @@ func main() {
 	openDB()
 
 	defer DB.Close()
-
-	if IsRedisStore == true {
-		openRedisConn()
-
-		defer RC.Close()
-	}
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
@@ -517,7 +523,9 @@ func main() {
 	// r.HandleFunc("/api/v1/profiles", GetAllProfilesHandler).Methods("GET")
 	// r.HandleFunc("/api/v1/profiles", CreateProfileHandler).Methods("POST")
 	// r.HandleFunc("/api/v1/profiles/{profile}", GetProfileHandler).Methods("GET")
-	r.HandleFunc("/api/v1/projects", GetAllProjectsHandler).Methods("GET")
+	r.Handle("/api/v1/projects",
+		negroni.New(negroni.HandlerFunc(AuthMiddleware),
+			negroni.HandlerFunc(GetAllProjectsHandler))).Methods("GET")
 	r.HandleFunc("/api/v1/projects", CreateProjectHandler).Methods("POST")
 	r.HandleFunc("/api/v1/projects/{project}", GetProjectHandler).Methods("GET")
 	r.HandleFunc("/api/v1/projects/{project}", UpdateProjectHandler).Methods("PUT")
