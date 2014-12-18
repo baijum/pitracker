@@ -28,7 +28,7 @@ App.Router.map(function() {
 App.ApplicationAdapter = DS.RESTAdapter.extend({
     namespace: 'api/v1',
     headers: {
-        token: localStorage.getItem('token')
+        Authorization: 'Bearer '+ localStorage.getItem('access_token')
     }
 });
 
@@ -51,7 +51,7 @@ App.Item = DS.Model.extend({
 App.AuthenticatedRoute = Ember.Route.extend({
 
     beforeModel: function(transition) {
-        if (!this.controllerFor('login').get('token')) {
+        if (!localStorage.access_token) {
             this.redirectToLogin(transition);
         }
     },
@@ -63,8 +63,8 @@ App.AuthenticatedRoute = Ember.Route.extend({
     },
 
     getJSONWithToken: function(url) {
-        var token = this.controllerFor('login').get('token');
-        return $.getJSON(url, { token: token });
+        var access_token = this.controllerFor('login').get('access_token');
+        return $.getJSON(url, { access_token: access_token });
     },
 
     actions: {
@@ -84,7 +84,7 @@ App.AuthenticatedRoute = Ember.Route.extend({
 App.LoginRoute = Ember.Route.extend({
 });
 
-App.ProjectsIndexRoute = Ember.Route.extend({
+App.ProjectsIndexRoute = App.AuthenticatedRoute.extend({
     model: function() {
         return this.store.find('project');
     }
@@ -116,7 +116,7 @@ App.ProjectRoute = Ember.Route.extend({
 
 App.IndexController = Ember.Controller.extend({
     logout: function() {
-        delete localStorage.token;
+        delete localStorage.access_token;
         this.controllerFor('login').set('loggedIn', false);
         this.transitionTo('index');
     }
@@ -128,7 +128,7 @@ App.LoginController = Ember.Controller.extend({
     },
 
     reset: function() {
-        delete localStorage.token;
+        delete localStorage.access_token;
         this.controllerFor('login').set('loggedIn', false);
         this.setProperties({
             username: '',
@@ -138,11 +138,11 @@ App.LoginController = Ember.Controller.extend({
         });
     },
 
-    token: localStorage.token,
+    access_token: localStorage.access_token,
 
     tokenChanged: function() {
-        localStorage.token = this.get('token');
-    }.observes('token'),
+        localStorage.access_token = this.get('access_token');
+    }.observes('access_token'),
 
     actions: {
         login: function() {
@@ -157,12 +157,12 @@ App.LoginController = Ember.Controller.extend({
                 self.set('errorMessage', response.message);
                 if (response.success) {
 
-                    self.set('token', response.token);
+                    self.set('access_token', response.access_token);
                     self.set('loggedIn', true);
 
                     // FIXME: Is there any better way to handle this ?
                     App.ApplicationAdapter.reopen({
-                        headers: {token: localStorage.token }
+                        headers: {Authorization: 'Bearer '+ localStorage.access_token }
                     });
 
                     var attemptedTransition = self.get('attemptedTransition');

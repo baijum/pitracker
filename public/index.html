@@ -447,6 +447,18 @@
 
   <script type="text/x-handlebars" id="login">
 
+	  <div id="signinButton">
+	    <span class="g-signin"
+		  data-scope="profile email"
+		  data-clientid="343017183610-goponutk0urv7v7q8tgvi93lkcepaamh.apps.googleusercontent.com"
+		  data-redirecturi="postmessage"
+		  data-accesstype="offline"
+		  data-cookiepolicy="single_host_origin"
+		  data-approvalprompt="force"
+		  data-callback="signInCallback">
+	    </span>
+	  </div>
+
     <form class="form-signin" {{action login on="submit"}}>
 
       {{#if errorMessage}}
@@ -478,6 +490,53 @@
   <script src="js/lib/ember.js"></script>
   <script src="js/lib/ember-data.js"></script>
   <script src="js/app.js"></script>
+
+  <script>
+      function signInCallback(authResult) {
+        if (authResult['code']) {
+      
+          // Hide the sign-in button now that the user is authorized, for example:
+          $('#signinButton').attr('style', 'display: none');
+
+          // Send the code to the server
+          $.ajax({
+            type: 'POST',
+            url: 'api/v1/auth',
+            contentType: 'application/octet-stream; charset=utf-8',
+            success: function(result) {
+              // Handle or verify the server response if necessary.
+      
+              // Prints the list of people that the user has allowed the app to know
+              // to the console.
+              console.log(result);
+              localStorage.access_token = result['access_token'];
+              App.Router.router.transitionTo('index');
+            },
+            processData: false,
+            data: authResult['code']
+          });
+        } else if (authResult['error']) {
+          // There was an error.
+          // Possible error codes:
+          //   "access_denied" - User denied access to your app
+          //   "immediate_failed" - Could not automatially log in the user
+          // console.log('There was an error: ' + authResult['error']);
+        }
+      }
+  </script>
+  
+  <script src="https://apis.google.com/js/client:platform.js?onload=render" async defer>
+      /* Executed when the APIs finish loading */
+      function render() {
+
+        // Additional params
+        var additionalParams = {
+          'theme' : 'dark'
+        };
+
+      gapi.signin.render('myButton', additionalParams);
+      }
+  </script>
 
 </body>
 </html>

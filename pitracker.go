@@ -20,7 +20,6 @@ import (
 )
 
 var (
-	signingKey   = "SOME KEY"
 	privateKey   []byte
 	publicKey    []byte
 	clientID     string
@@ -28,9 +27,9 @@ var (
 )
 
 type AuthToken struct {
-	Success bool   `json:"success"`
-	Token   string `json:"token"`
-	Message string `json:"message"`
+	Success     bool   `json:"success"`
+	AccessToken string `json:"access_token"`
+	Message     string `json:"message"`
 }
 
 type Project struct {
@@ -65,9 +64,13 @@ func AuthMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFun
 	token, err := jwt.ParseFromRequest(r, func(token *jwt.Token) (interface{}, error) {
 		return publicKey, nil
 	})
+	log.Println("22222222222222222")
+	fmt.Printf("token: %+v", token)
 	if err == nil && token.Valid {
+		log.Println("333333333333333333")
 		next(w, r)
 	} else {
+		log.Println("44444444444444444444")
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Write([]byte("Unauthorized"))
 	}
@@ -91,6 +94,7 @@ func Authorize(w http.ResponseWriter, r *http.Request, p string) error {
 */
 
 func AuthHandler(w http.ResponseWriter, r *http.Request) {
+
 	x, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Fatal("Error reading code in the request body: ", err)
@@ -153,6 +157,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	token.Claims["sub"] = gplusID
 	token.Claims["exp"] = time.Now().Add(time.Hour * 24 * 7).Unix()
 	tokenString, _ := token.SignedString(privateKey)
+	log.Printf("Valid Token: %+v", token)
 	fmt.Printf("gplusID: %v\n", gplusID)
 	fmt.Printf("tokenString: %v\n", tokenString)
 
@@ -488,8 +493,6 @@ func openDB() {
 
 }
 
-var rsaPrivateKey []byte
-
 func init() {
 	privateKey, _ = ioutil.ReadFile("test/id_rsa")
 	publicKey, _ = ioutil.ReadFile("test/id_rsa.pub")
@@ -498,11 +501,6 @@ func init() {
 }
 
 func main() {
-	var err error
-	rsaPrivateKey, err = ioutil.ReadFile("test/id_rsa")
-	if err != nil {
-		log.Fatal(err.Error())
-	}
 
 	openDB()
 
