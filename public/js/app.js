@@ -27,9 +27,11 @@ App.Router.map(function() {
 // Data adapter
 App.ApplicationAdapter = DS.RESTAdapter.extend({
     namespace: 'api/v1',
-    headers: {
-        Authorization: 'Bearer '+ localStorage.getItem('access_token')
-    }
+    headers: function() {
+        return {
+	    "Authorization": 'Bearer ' + localStorage.access_token
+	    };
+    }.property().volatile()
 });
 
 // Models
@@ -52,6 +54,7 @@ App.AuthenticatedRoute = Ember.Route.extend({
 
     beforeModel: function(transition) {
         if (!localStorage.access_token) {
+	    console.log("LLLLLLLLLLLLLLLLLLLLLLLLLLLL")
             this.redirectToLogin(transition);
         }
     },
@@ -63,8 +66,9 @@ App.AuthenticatedRoute = Ember.Route.extend({
     },
 
     getJSONWithToken: function(url) {
-        var access_token = this.controllerFor('login').get('access_token');
-        return $.getJSON(url, { access_token: access_token });
+        //var access_token = this.controllerFor('login').get('access_token');
+	console.log("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
+        return $.getJSON(url, { access_token: localStorage.access_token });
     },
 
     actions: {
@@ -117,7 +121,7 @@ App.ProjectRoute = Ember.Route.extend({
 App.IndexController = Ember.Controller.extend({
     logout: function() {
         delete localStorage.access_token;
-        this.controllerFor('login').set('loggedIn', false);
+        //this.controllerFor('login').set('loggedIn', false);
         this.transitionTo('index');
     }
 });
@@ -140,9 +144,9 @@ App.LoginController = Ember.Controller.extend({
 
     access_token: localStorage.access_token,
 
-    tokenChanged: function() {
-        localStorage.access_token = this.get('access_token');
-    }.observes('access_token'),
+    // tokenChanged: function() {
+    //     localStorage.access_token = this.get('access_token');
+    // }.observes('access_token'),
 
     actions: {
         login: function() {
@@ -157,12 +161,12 @@ App.LoginController = Ember.Controller.extend({
                 self.set('errorMessage', response.message);
                 if (response.success) {
 
-                    self.set('access_token', response.access_token);
+                    localStorage.access_token = response.access_token
                     self.set('loggedIn', true);
 
                     // FIXME: Is there any better way to handle this ?
                     App.ApplicationAdapter.reopen({
-                        headers: {Authorization: 'Bearer '+ localStorage.access_token }
+                        headers: {Authorization: 'Bearer ' + localStorage.access_token }
                     });
 
                     var attemptedTransition = self.get('attemptedTransition');
