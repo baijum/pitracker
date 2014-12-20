@@ -2,8 +2,13 @@ DROP TABLE IF EXISTS "member" CASCADE;
 
 CREATE TABLE "member" (
        id serial PRIMARY KEY,
-       username TEXT,
-       password TEXT
+       plusid TEXT UNIQUE,
+       email TEXT,
+       displayname TEXT,
+       familyname TEXT,
+       givenname TEXT,
+       gender TEXT,
+       url TEXT
 );
 
 DROP TABLE IF EXISTS "project" CASCADE;
