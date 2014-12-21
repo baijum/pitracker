@@ -25,7 +25,8 @@ DROP TABLE IF EXISTS "item" CASCADE;
 CREATE TABLE "item" (
        id SERIAL PRIMARY KEY,
        title TEXT,
-       description TEXT
+       description TEXT,
+       project_id BIGINT REFERENCES project(id)
 );
 
 DROP TABLE IF EXISTS "comment" CASCADE;
