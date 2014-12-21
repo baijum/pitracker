@@ -54,7 +54,6 @@ App.AuthenticatedRoute = Ember.Route.extend({
 
     beforeModel: function(transition) {
         if (!localStorage.access_token) {
-	    console.log("LLLLLLLLLLLLLLLLLLLLLLLLLLLL")
             this.redirectToLogin(transition);
         }
     },
@@ -66,8 +65,6 @@ App.AuthenticatedRoute = Ember.Route.extend({
     },
 
     getJSONWithToken: function(url) {
-        //var access_token = this.controllerFor('login').get('access_token');
-	console.log("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
         return $.getJSON(url, { access_token: localStorage.access_token });
     },
 
@@ -94,7 +91,7 @@ App.ProjectsIndexRoute = App.AuthenticatedRoute.extend({
     }
 });
 
-App.ProjectsNewRoute = Ember.Route.extend({
+App.ProjectsNewRoute = App.AuthenticatedRoute.extend({
 });
 
 App.ProjectsNewController = Ember.Controller.extend({
@@ -112,7 +109,7 @@ App.ProjectsNewController = Ember.Controller.extend({
     }
 });
 
-App.ProjectRoute = Ember.Route.extend({
+App.ProjectRoute = App.AuthenticatedRoute.extend({
     model: function(params) {
 	return this.store.find('project', params.project_id);
     }
@@ -121,7 +118,6 @@ App.ProjectRoute = Ember.Route.extend({
 App.IndexController = Ember.Controller.extend({
     logout: function() {
         delete localStorage.access_token;
-        //this.controllerFor('login').set('loggedIn', false);
         this.transitionTo('index');
     }
 });
@@ -192,13 +188,13 @@ App.LoginController = Ember.Controller.extend({
     }
 });
 
-App.ItemsIndexRoute = Ember.Route.extend({
+App.ItemsIndexRoute = App.AuthenticatedRoute.extend({
     model: function() {
         return this.store.find('item');
     }
 });
 
-App.ItemsNewRoute = Ember.Route.extend({
+App.ItemsNewRoute = App.AuthenticatedRoute.extend({
 });
 
 App.ItemsNewController = Ember.Controller.extend({
@@ -216,16 +212,16 @@ App.ItemsNewController = Ember.Controller.extend({
     }
 });
 
-App.ItemRoute = Ember.Route.extend({
+App.ItemRoute = App.AuthenticatedRoute.extend({
     model: function(params) {
         return this.store.find('item', params.item_id);
     }
 });
 
-App.ItemIndexRoute = Ember.Route.extend({
+App.ItemIndexRoute = App.AuthenticatedRoute.extend({
 });
 
-App.ItemEditRoute = Ember.Route.extend({
+App.ItemEditRoute = App.AuthenticatedRoute.extend({
     actions: {
         save: function(item) {
             item.save();
@@ -234,7 +230,7 @@ App.ItemEditRoute = Ember.Route.extend({
     }
 });
 
-App.ProjectEditRoute = Ember.Route.extend({
+App.ProjectEditRoute = App.AuthenticatedRoute.extend({
     actions: {
         save: function(project) {
             project.save();
@@ -243,7 +239,7 @@ App.ProjectEditRoute = Ember.Route.extend({
     }
 });
 
-App.ProjectArchiveRoute = Ember.Route.extend({
+App.ProjectArchiveRoute = App.AuthenticatedRoute.extend({
     actions: {
         save: function(project) {
             project.deleteRecord();
