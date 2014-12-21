@@ -475,6 +475,48 @@ func GetItemHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateItemHandler(w http.ResponseWriter, r *http.Request) {
+
+	type itm struct {
+		Id int `json:"id"`
+		Item
+	}
+	var il []itm
+	t1 := make(map[string][]itm)
+
+	vars := mux.Vars(r)
+	id := vars["item"]
+
+	i, err := strconv.Atoi(id)
+	if err != nil {
+		// handle error
+		log.Println(err)
+		log.Fatal("Wrong ID")
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	var t map[string]Item
+	err = decoder.Decode(&t)
+	if err != nil {
+		log.Fatal("Unable to decode body")
+	}
+	item := t["item"]
+	log.Printf("Item: %+v", item)
+
+	DB.QueryRow(`UPDATE "item"
+         SET title = $1, description = $2 WHERE id = $3`,
+		item.Title, item.Description, id)
+
+	it := itm{i, Item{item.Title, item.Description}}
+	il = append(il, it)
+
+	t1["items"] = il
+	w.Header().Set("Content-Type", "application/json")
+	out, err := json.Marshal(t1)
+	if err != nil {
+		log.Fatal("Unable to marhal")
+	}
+	log.Printf("Out: %s", out)
+	w.Write(out)
 }
 
 var DB *sql.DB
