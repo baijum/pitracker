@@ -200,9 +200,11 @@ App.ItemsNewRoute = App.AuthenticatedRoute.extend({
 App.ItemsNewController = Ember.Controller.extend({
     actions: {
 	save: function() {
+	    var project = this.get('project');
 	    var title = this.get('title');
             var description = this.get('description');
             var item = this.store.createRecord('item', {
+		project: project,
                 title: title,
                 description: description
             });
