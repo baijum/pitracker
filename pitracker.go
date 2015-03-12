@@ -22,10 +22,15 @@ func main() {
 	}
 	defer db.Close()
 
-	err = tracker.CreateBucket(db, "items")
+	err = tracker.CreateBucket(db, "project")
 	if err != nil {
-		log.Fatal("Unable to create 'items' bucket: ", err)
+		log.Fatal("Unable to create 'project' bucket: ", err)
 	}
 
-	tracker.WebMain()
+	err = tracker.CreateBucket(db, "item")
+	if err != nil {
+		log.Fatal("Unable to create 'item' bucket: ", err)
+	}
+
+	tracker.WebMain(db)
 }
