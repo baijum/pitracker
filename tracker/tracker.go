@@ -41,7 +41,7 @@ func CreateBucket(db *bolt.DB, name string) error {
 }
 
 func GetAllProjectsHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello someting"))
+	w.Write([]byte(`{"projects": []}`))
 }
 
 func CreateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
@@ -94,6 +94,7 @@ func CreateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 		log.Fatal("Unable to marhal")
 	}
 	log.Printf("Out: %s", out)
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(out)
 }
 

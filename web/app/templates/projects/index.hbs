@@ -1,0 +1,6 @@
+<h1 class="page-header">All Projects</h1>
+<ul>
+  {{#each project in model}}
+    <li>{{#link-to 'project' project.id }}{{ project.name }}{{/link-to}} - {{ project.description }}</li>
+  {{/each}}
+</ul>
