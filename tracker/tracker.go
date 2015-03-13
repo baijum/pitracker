@@ -74,6 +74,7 @@ func CreateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 	if err != nil {
 		log.Printf("Error: %v", err)
 		// Return the struct or empty ?
+		w.WriteHeader(409)
 		return
 	}
 

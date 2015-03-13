@@ -1,17 +1,20 @@
 import Ember from "ember";
- 
+
 export default Ember.Controller.extend({
   actions: {
     createProject: function() {
-      console.log(this.name);
-      console.log(this.description);
-
-      var project = this.store.createRecord('project', {
-        name: this.name,
-        description: this.description
+      var self = this;
+      var project = self.store.createRecord('project', {
+        name: self.get('name'),
+        description: self.get('description')
       });
- 
-      project.save();
+      project.save().then(function(response) {
+	self.transitionTo('index');
+      }, function(response) {
+	if (response.status == 409) {
+	  console.log("Project already exists");
+	}
+      });
     }
   }
 });
