@@ -8,10 +8,10 @@ export default Ember.Controller.extend({
         name: self.get('name'),
         description: self.get('description')
       });
-      project.save().then(function(response) {
+      project.save().then(function() {
 	self.transitionTo('index');
       }, function(response) {
-	if (response.status == 409) {
+	if (response.status === 409) {
 	  console.log("Project already exists");
 	}
       });

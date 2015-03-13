@@ -5,6 +5,7 @@ export default Ember.Route.extend({
     error: function(error, transition) {
       // handle the error
       console.log(error.message);
+      console.log(transition);
     }
   }
 });
