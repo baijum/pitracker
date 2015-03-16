@@ -2,6 +2,8 @@ package main_test
 
 import (
 	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -50,6 +52,29 @@ func TestBucketCreation(t *testing.T) {
 		}
 		return nil
 	})
+	db.Close()
+	os.Remove(file)
+}
+
+func TestReq(t *testing.T) {
+	file := tempfile()
+	db, _ := tracker.OpenBoltDB(file)
+
+	req, err := http.NewRequest("GET", "/projects", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w := httptest.NewRecorder()
+	tracker.GetAllProjectsHandler(w, req)
+
+	exp := `{"projects": []}`
+	out := w.Body.String()
+
+	if out != exp {
+		t.Fail()
+	}
+
 	db.Close()
 	os.Remove(file)
 }
