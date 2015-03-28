@@ -21,6 +21,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/boltdb/bolt"
@@ -29,7 +30,8 @@ import (
 )
 
 var (
-	DB *bolt.DB
+	DB    *bolt.DB
+	uiDir string
 )
 
 type Project struct {
@@ -125,6 +127,10 @@ func EmberClassic(dir string) *negroni.Negroni {
 	return negroni.New(negroni.NewRecovery(), negroni.NewLogger(), negroni.NewStatic(http.Dir(dir)))
 }
 
+func init() {
+	uiDir = os.Getenv("PITRACKER_UI_DIR")
+}
+
 func WebMain(db *bolt.DB) {
 	r := mux.NewRouter()
 	r.HandleFunc("/api/v1/projects", GetAllProjectsHandler).Methods("GET")
@@ -138,7 +144,7 @@ func WebMain(db *bolt.DB) {
 	// r.HandleFunc("/api/v1/items", CreateItemHandler).Methods("POST")
 	// r.HandleFunc("/api/v1/items/{item}", GetItemHandler).Methods("GET")
 	// r.HandleFunc("/api/v1/items/{item}", UpdateItemHandler).Methods("PUT")
-	n := EmberClassic("web/dist")
+	n := EmberClassic(uiDir)
 	n.UseHandler(r)
 	n.Run(":3000")
 }
