@@ -58,9 +58,36 @@ func CreateBucket(db *bolt.DB, name string) error {
 	return err
 }
 
-func GetAllProjectsHandler(w http.ResponseWriter, r *http.Request) {
+func GetAllProjectsHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
+	type proj struct {
+		Id int `json:"id"`
+		Project
+	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"projects": []}`))
+
+	var pl []proj
+
+	db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("project"))
+		i := 0
+		b.ForEach(func(k, v []byte) error {
+			i = i + 1
+			log.Printf("key=%s, value=%s\n", k, v)
+			p := proj{i, Project{string(k), string(v)}}
+			pl = append(pl, p)
+			return nil
+		})
+		return nil
+	})
+
+	t := make(map[string][]proj)
+	t["projects"] = pl
+	out, err := json.Marshal(t)
+	if err != nil {
+		log.Fatal("Unable to marhal")
+	}
+	log.Printf("Out: %s", out)
+	w.Write(out)
 }
 
 func CreateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
@@ -133,7 +160,9 @@ func init() {
 
 func WebMain(db *bolt.DB) {
 	r := mux.NewRouter()
-	r.HandleFunc("/api/v1/projects", GetAllProjectsHandler).Methods("GET")
+	r.HandleFunc("/api/v1/projects", func(w http.ResponseWriter, r *http.Request) {
+		GetAllProjectsHandler(w, r, db)
+	}).Methods("GET")
 	r.HandleFunc("/api/v1/projects", func(w http.ResponseWriter, r *http.Request) {
 		CreateProjectHandler(w, r, db)
 	}).Methods("POST")
