@@ -158,19 +158,18 @@ func GetProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 	vars := mux.Vars(r)
 	pn := vars["project"]
 
-	// var id int
-	// type proj struct {
-	// 	Id int `json:"id"`
-	// 	Project
-	// }
-	// var pl []proj
-	t := make(map[string]Project)
+	type proj struct {
+		Id int `json:"id"`
+		Project
+	}
+
+	t := make(map[string]proj)
 
 	_ = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("project"))
 		v := b.Get([]byte(pn))
 		log.Printf(string(v))
-		t["project"] = Project{pn, string(v)}
+		t["project"] = proj{1, Project{pn, string(v)}}
 		return nil
 	})
 
@@ -179,9 +178,10 @@ func GetProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 		log.Fatal("Unable to marhal")
 	}
 	_ = out
+
+	log.Printf("%s", out)
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"project": { "id": 1, "name": "ok", "description": "Okay"}}`))
-	//w.Write(out)
+	w.Write(out)
 }
 
 func init() {
