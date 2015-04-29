@@ -18,6 +18,9 @@ Router.map(function() {
       this.resource('milestone', { path: ':milestone_id' });
     });
   });
+  this.resource('events', function() {
+    this.route('view');
+  });
 });
 
 export default Router;
