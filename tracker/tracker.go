@@ -154,6 +154,36 @@ func EmberClassic(dir string) *negroni.Negroni {
 	return negroni.New(negroni.NewRecovery(), negroni.NewLogger(), negroni.NewStatic(http.Dir(dir)))
 }
 
+func GetProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
+	vars := mux.Vars(r)
+	pn := vars["project"]
+
+	// var id int
+	// type proj struct {
+	// 	Id int `json:"id"`
+	// 	Project
+	// }
+	// var pl []proj
+	t := make(map[string]Project)
+
+	_ = db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("project"))
+		v := b.Get([]byte(pn))
+		log.Printf(string(v))
+		t["project"] = Project{pn, string(v)}
+		return nil
+	})
+
+	out, err := json.Marshal(t)
+	if err != nil {
+		log.Fatal("Unable to marhal")
+	}
+	_ = out
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"project": { "id": 1, "name": "ok", "description": "Okay"}}`))
+	//w.Write(out)
+}
+
 func init() {
 	uiDir = os.Getenv("PITRACKER_UI_DIR")
 }
@@ -166,7 +196,9 @@ func WebMain(db *bolt.DB) {
 	r.HandleFunc("/api/v1/projects", func(w http.ResponseWriter, r *http.Request) {
 		CreateProjectHandler(w, r, db)
 	}).Methods("POST")
-	// r.HandleFunc("/api/v1/projects/{project}", GetProjectHandler).Methods("GET")
+	r.HandleFunc("/api/v1/projects/{project}", func(w http.ResponseWriter, r *http.Request) {
+		GetProjectHandler(w, r, db)
+	}).Methods("GET")
 	// r.HandleFunc("/api/v1/projects/{project}", UpdateProjectHandler).Methods("PUT")
 	// r.HandleFunc("/api/v1/projects/{project}", ArchiveProjectHandler).Methods("DELETE")
 	// r.HandleFunc("/api/v1/items", GetAllItemsHandler).Methods("GET")
