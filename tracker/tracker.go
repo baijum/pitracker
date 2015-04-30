@@ -186,7 +186,7 @@ func GetProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 
 func UpdateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{}`))
+	w.Write([]byte(`{"project": { "id": 1, "name": "ok", "description": "Okay"}}`))
 }
 
 func init() {

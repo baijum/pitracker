@@ -9,7 +9,7 @@ Router.map(function() {
   this.route('about');
   this.resource('projects', function() {
     this.route('new');
-    this.resource('project', { path: ':project_id' }, function() {
+    this.resource('project', { path: ':project_name' }, function() {
       this.route('edit');
       this.route('archive');
     });
