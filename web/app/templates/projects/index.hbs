@@ -1,7 +1,7 @@
 <h1 class="page-header">All Projects</h1>
 <ul>
   {{#each project in model}}
-    <li>{{#link-to 'project' project.name }}{{ project.name }}{{/link-to}} - {{ project.description }}</li>
+    <li>{{#link-to 'project' project.id }}{{ project.id }}{{/link-to}} - {{ project.description }}</li>
   {{/each}}
 </ul>
 
