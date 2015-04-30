@@ -27,6 +27,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
+	"github.com/nu7hatch/gouuid"
 )
 
 var (
@@ -35,6 +36,7 @@ var (
 )
 
 type Project struct {
+	Id          string `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
@@ -59,28 +61,23 @@ func CreateBucket(db *bolt.DB, name string) error {
 }
 
 func GetAllProjectsHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
-	type proj struct {
-		Id int `json:"id"`
-		Project
-	}
 	w.Header().Set("Content-Type", "application/json")
 
-	var pl []proj
+	var pl []Project
 
 	db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("project"))
-		i := 0
 		b.ForEach(func(k, v []byte) error {
-			i = i + 1
 			log.Printf("key=%s, value=%s\n", k, v)
-			p := proj{i, Project{string(k), string(v)}}
+			var p Project
+			json.Unmarshal(v, &p)
 			pl = append(pl, p)
 			return nil
 		})
 		return nil
 	})
 
-	t := make(map[string][]proj)
+	t := make(map[string][]Project)
 	t["projects"] = pl
 	out, err := json.Marshal(t)
 	if err != nil {
@@ -91,13 +88,8 @@ func GetAllProjectsHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) 
 }
 
 func CreateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
-	var id int
-	type proj struct {
-		Id int `json:"id"`
-		Project
-	}
-	var pl []proj
-	t1 := make(map[string][]proj)
+	var pl []Project
+	t1 := make(map[string][]Project)
 
 	decoder := json.NewDecoder(r.Body)
 	var t map[string]Project
@@ -109,7 +101,7 @@ func CreateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 	log.Printf("Project: %+v", project)
 
 	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("project"))
+		b := tx.Bucket([]byte("project_name_id"))
 		v := b.Get([]byte(project.Name))
 		if v != nil {
 			return errors.New("Project already exists")
@@ -124,14 +116,25 @@ func CreateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 		return
 	}
 
+	u4, err := uuid.NewV4()
+	if err != nil {
+		log.Println("error:", err)
+		return
+	}
+	log.Println(u4)
+
+	project.Id = u4.String()
+	p1, _ := json.Marshal(project)
+
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("project"))
-		err := b.Put([]byte(project.Name), []byte(project.Description))
+		err := b.Put([]byte(project.Id), []byte(p1))
+		c := tx.Bucket([]byte("project_name_id"))
+		_ = c.Put([]byte(project.Name), []byte(project.Id))
 		return err
 	})
 
-	p := proj{id, Project{project.Name, project.Description}}
-	pl = append(pl, p)
+	pl = append(pl, project)
 
 	t1["projects"] = pl
 
@@ -158,18 +161,17 @@ func GetProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 	vars := mux.Vars(r)
 	pn := vars["project"]
 
-	type proj struct {
-		Id int `json:"id"`
-		Project
-	}
-
-	t := make(map[string]proj)
+	t := make(map[string]Project)
 
 	_ = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("project"))
+		b := tx.Bucket([]byte("project_name_id"))
 		v := b.Get([]byte(pn))
-		log.Printf(string(v))
-		t["project"] = proj{1, Project{pn, string(v)}}
+		log.Printf("Project ID: %+v", v)
+		c := tx.Bucket([]byte("project"))
+		v1 := c.Get([]byte(v))
+		var p Project
+		json.Unmarshal(v1, &p)
+		t["project"] = p
 		return nil
 	})
 
@@ -212,6 +214,9 @@ func WebMain(db *bolt.DB) {
 	// r.HandleFunc("/api/v1/items", CreateItemHandler).Methods("POST")
 	// r.HandleFunc("/api/v1/items/{item}", GetItemHandler).Methods("GET")
 	// r.HandleFunc("/api/v1/items/{item}", UpdateItemHandler).Methods("PUT")
+
+	//h := http.Handle("/introspect", http.StripPrefix("/introspect", boltd.NewHandler(mydb)))
+
 	n := EmberClassic(uiDir)
 	n.UseHandler(r)
 	n.Run(":3000")

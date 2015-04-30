@@ -43,6 +43,11 @@ func main() {
 		log.Fatal("Unable to create 'project' bucket: ", err)
 	}
 
+	err = tracker.CreateBucket(db, "project_name_id")
+	if err != nil {
+		log.Fatal("Unable to create 'project_name_id' bucket: ", err)
+	}
+
 	err = tracker.CreateBucket(db, "item")
 	if err != nil {
 		log.Fatal("Unable to create 'item' bucket: ", err)
