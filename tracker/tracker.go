@@ -27,7 +27,6 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
-	"github.com/nu7hatch/gouuid"
 )
 
 var (
@@ -36,7 +35,7 @@ var (
 )
 
 type Project struct {
-	Id          string `json:"id"`
+	Id          string `json:"_id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
@@ -101,8 +100,8 @@ func CreateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 	log.Printf("Project: %+v", project)
 
 	err = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("project_name_id"))
-		v := b.Get([]byte(project.Name))
+		b := tx.Bucket([]byte("project"))
+		v := b.Get([]byte(project.Id))
 		if v != nil {
 			return errors.New("Project already exists")
 		}
@@ -116,21 +115,11 @@ func CreateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 		return
 	}
 
-	u4, err := uuid.NewV4()
-	if err != nil {
-		log.Println("error:", err)
-		return
-	}
-	log.Println(u4)
-
-	project.Id = u4.String()
 	p1, _ := json.Marshal(project)
 
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("project"))
 		err := b.Put([]byte(project.Id), []byte(p1))
-		c := tx.Bucket([]byte("project_name_id"))
-		_ = c.Put([]byte(project.Name), []byte(project.Id))
 		return err
 	})
 
@@ -164,11 +153,8 @@ func GetProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 	t := make(map[string]Project)
 
 	_ = db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("project_name_id"))
-		v := b.Get([]byte(pn))
-		log.Printf("Project ID: %+v", v)
 		c := tx.Bucket([]byte("project"))
-		v1 := c.Get([]byte(v))
+		v1 := c.Get([]byte(pn))
 		var p Project
 		json.Unmarshal(v1, &p)
 		t["project"] = p
@@ -187,8 +173,64 @@ func GetProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 }
 
 func UpdateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
+	vars := mux.Vars(r)
+	pd := vars["project"]
+
+	var pl []Project
+
+	var t map[string]Project
+	//t = make(map[string][]Project)
+	t1 := make(map[string][]Project)
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&t)
+	if err != nil {
+		log.Fatal("Unable to decode body")
+	}
+	project := t["project"]
+	project.Id = pd
+	log.Printf("Project: %#v\n pd: %+v", project, pd)
+
+	p1, _ := json.Marshal(project)
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("project"))
+		err := b.Put([]byte(project.Id), []byte(p1))
+		return err
+	})
+
+	pl = append(pl, project)
+
+	t1["projects"] = pl
+
+	out, err := json.Marshal(t1)
+	if err != nil {
+		log.Fatal("Unable to marhal")
+	}
+	log.Printf("Out: %s", out)
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"project": { "id": 1, "name": "ok", "description": "Okay"}}`))
+	w.Write(out)
+
+	// err = db.Update(func(tx *bolt.Tx) error {
+	// 	b := tx.Bucket([]byte("project"))
+	// 	err := b.Put([]byte(project.Id), []byte(p1))
+	// 	c := tx.Bucket([]byte("project_id_name"))
+	// 	_ = c.Put([]byte(project.Id), []byte(project.Id))
+	// 	return err
+	// })
+
+	// out, err := json.Marshal(t)
+	// if err != nil {
+	// 	log.Fatal("Unable to marhal")
+	// }
+	// _ = out
+
+	// log.Printf("%s", out)
+	// w.Header().Set("Content-Type", "application/json")
+	// w.Write(out)
+
+	// w.Header().Set("Content-Type", "application/json")
+	// w.Write([]byte(`{"project": { "id": 1, "name": "ok", "description": "Okay"}}`))
 }
 
 func init() {

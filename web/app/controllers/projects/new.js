@@ -6,6 +6,7 @@ export default Ember.Controller.extend({
       var self = this;
       var project = self.store.createRecord('project', {
         name: self.get('name'),
+        _id: self.get('_id'),
         description: self.get('description')
       });
       project.save().then(function() {
