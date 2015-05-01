@@ -179,7 +179,6 @@ func UpdateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 	var pl []Project
 
 	var t map[string]Project
-	//t = make(map[string][]Project)
 	t1 := make(map[string][]Project)
 
 	decoder := json.NewDecoder(r.Body)
@@ -210,27 +209,6 @@ func UpdateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 	log.Printf("Out: %s", out)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(out)
-
-	// err = db.Update(func(tx *bolt.Tx) error {
-	// 	b := tx.Bucket([]byte("project"))
-	// 	err := b.Put([]byte(project.Id), []byte(p1))
-	// 	c := tx.Bucket([]byte("project_id_name"))
-	// 	_ = c.Put([]byte(project.Id), []byte(project.Id))
-	// 	return err
-	// })
-
-	// out, err := json.Marshal(t)
-	// if err != nil {
-	// 	log.Fatal("Unable to marhal")
-	// }
-	// _ = out
-
-	// log.Printf("%s", out)
-	// w.Header().Set("Content-Type", "application/json")
-	// w.Write(out)
-
-	// w.Header().Set("Content-Type", "application/json")
-	// w.Write([]byte(`{"project": { "id": 1, "name": "ok", "description": "Okay"}}`))
 }
 
 func init() {
