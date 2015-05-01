@@ -38,6 +38,7 @@ type Project struct {
 	Id          string `json:"_id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
+	Archived    bool   `json:"archived"`
 }
 
 // Open Bold DB and return reference and error if any
@@ -60,9 +61,17 @@ func CreateBucket(db *bolt.DB, name string) error {
 }
 
 func GetAllProjectsHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
+	archived := r.FormValue("archived")
+	log.Printf("Archived %+v %T", archived, archived)
 	w.Header().Set("Content-Type", "application/json")
 
 	var pl []Project
+
+	a := false
+
+	if archived == "true" {
+		a = true
+	}
 
 	db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("project"))
@@ -70,7 +79,9 @@ func GetAllProjectsHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) 
 			log.Printf("key=%s, value=%s\n", k, v)
 			var p Project
 			json.Unmarshal(v, &p)
-			pl = append(pl, p)
+			if p.Archived == a {
+				pl = append(pl, p)
+			}
 			return nil
 		})
 		return nil
@@ -114,6 +125,8 @@ func CreateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 		w.WriteHeader(409)
 		return
 	}
+
+	project.Archived = false
 
 	p1, _ := json.Marshal(project)
 
