@@ -22,6 +22,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/boltdb/bolt"
@@ -39,6 +40,12 @@ type Project struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Archived    bool   `json:"archived"`
+}
+
+type Item struct {
+	Id          int    `json:"_id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }
 
 // Open Bold DB and return reference and error if any
@@ -225,7 +232,48 @@ func UpdateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 }
 
 func CreateItemHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
+	var pl []Item
+	t1 := make(map[string][]Item)
 
+	decoder := json.NewDecoder(r.Body)
+	var t map[string]Item
+	err := decoder.Decode(&t)
+	if err != nil {
+		log.Fatal("Unable to decode body")
+	}
+	item := t["item"]
+	log.Printf("Item: %+v", item)
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("item"))
+		c := b.Cursor()
+		k, v := c.Last()
+		log.Printf("k: %#v v:%#v", k, v)
+		var j int
+		if k == nil {
+			log.Printf("Empty items")
+			j = 1
+		} else {
+			i, _ := strconv.Atoi(string(k))
+			j = i + 1
+		}
+		item.Id = j
+		p1, _ := json.Marshal(item)
+		err := b.Put(k, []byte(p1))
+		return err
+	})
+
+	pl = append(pl, item)
+
+	t1["items"] = pl
+
+	out, err := json.Marshal(t1)
+	if err != nil {
+		log.Fatal("Unable to marhal")
+	}
+	log.Printf("Out: %s", out)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(out)
 }
 
 func init() {
