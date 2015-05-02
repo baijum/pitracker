@@ -13,13 +13,16 @@ Router.map(function() {
       this.route('edit');
       this.route('archive');
     });
-    this.resource('milestones', function() {
-      this.route('new');
-      this.resource('milestone', { path: ':milestone_id' });
-    });
   });
-  this.resource('events', function() {
-    this.route('view');
+  this.resource('items', function() {
+    this.route('new');
+    this.resource('item', { path: ':item_id' }, function() {
+      this.route('edit');
+      this.route('archive');
+      this.resource('comment', { path: ':comment_id' }, function() {
+    this.route('edit');
+      });
+    });
   });
 });
 

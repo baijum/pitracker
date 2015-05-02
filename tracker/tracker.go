@@ -224,6 +224,10 @@ func UpdateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 	w.Write(out)
 }
 
+func CreateItemHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
+
+}
+
 func init() {
 	uiDir = os.Getenv("PITRACKER_UI_DIR")
 }
@@ -244,7 +248,9 @@ func WebMain(db *bolt.DB) {
 	}).Methods("PUT")
 	// r.HandleFunc("/api/v1/projects/{project}", ArchiveProjectHandler).Methods("DELETE")
 	// r.HandleFunc("/api/v1/items", GetAllItemsHandler).Methods("GET")
-	// r.HandleFunc("/api/v1/items", CreateItemHandler).Methods("POST")
+	r.HandleFunc("/api/v1/items", func(w http.ResponseWriter, r *http.Request) {
+		CreateItemHandler(w, r, db)
+	}).Methods("POST")
 	// r.HandleFunc("/api/v1/items/{item}", GetItemHandler).Methods("GET")
 	// r.HandleFunc("/api/v1/items/{item}", UpdateItemHandler).Methods("PUT")
 
