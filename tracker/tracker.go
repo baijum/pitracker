@@ -60,6 +60,16 @@ func CreateBucket(db *bolt.DB, name string) error {
 	return err
 }
 
+// EmberClassic returns a new Negroni instance with the default
+// middleware already in the stack.
+//
+// Recovery - Panic Recovery Middleware
+// Logger - Request/Response Logging
+// Static - Static File Serving
+func EmberClassic(dir string) *negroni.Negroni {
+	return negroni.New(negroni.NewRecovery(), negroni.NewLogger(), negroni.NewStatic(http.Dir(dir)))
+}
+
 func GetAllProjectsHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 	archived := r.FormValue("archived")
 	log.Printf("Archived %+v %T", archived, archived)
@@ -147,16 +157,6 @@ func CreateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 	log.Printf("Out: %s", out)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(out)
-}
-
-// EmberClassic returns a new Negroni instance with the default
-// middleware already in the stack.
-//
-// Recovery - Panic Recovery Middleware
-// Logger - Request/Response Logging
-// Static - Static File Serving
-func EmberClassic(dir string) *negroni.Negroni {
-	return negroni.New(negroni.NewRecovery(), negroni.NewLogger(), negroni.NewStatic(http.Dir(dir)))
 }
 
 func GetProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
