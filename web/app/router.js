@@ -19,9 +19,9 @@ Router.map(function() {
     this.resource('item', { path: ':item_id' }, function() {
       this.route('edit');
       this.route('archive');
-      this.resource('comment', { path: ':comment_id' }, function() {
-    this.route('edit');
-      });
+//      this.resource('comment', { path: ':comment_id' }, function() {
+//	this.route('edit');
+//      });
     });
   });
 });

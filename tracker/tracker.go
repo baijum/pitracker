@@ -22,6 +22,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/boltdb/bolt"
@@ -255,7 +256,6 @@ func GetAllItemsHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 	}
 	log.Printf("Out: %s", out)
 	w.Write(out)
-	//w.Write([]byte(`{"items":[{"id":"1","title":"a2","description":"aa"}]}`))
 }
 
 func CreateItemHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
@@ -306,6 +306,38 @@ func CreateItemHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 	w.Write(out)
 }
 
+func GetItemHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
+	vars := mux.Vars(r)
+	pn := vars["item"]
+	n, _ := strconv.Atoi(pn)
+
+	log.Printf("pn(T): %T pn: %+v", pn, pn)
+
+	t := make(map[string]Item)
+
+	var p Item
+
+	_ = db.View(func(tx *bolt.Tx) error {
+		c := tx.Bucket([]byte("item"))
+		v1 := c.Get([]byte(string(n)))
+		json.Unmarshal(v1, &p)
+		t["item"] = p
+		return nil
+	})
+
+	log.Printf("Items: %+v", t)
+
+	out, err := json.Marshal(t)
+	if err != nil {
+		log.Fatal("Unable to marhal")
+	}
+	_ = out
+
+	log.Printf("%s", out)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(out)
+}
+
 func init() {
 	uiDir = os.Getenv("PITRACKER_UI_DIR")
 }
@@ -331,7 +363,9 @@ func WebMain(db *bolt.DB) {
 	r.HandleFunc("/api/v1/items", func(w http.ResponseWriter, r *http.Request) {
 		CreateItemHandler(w, r, db)
 	}).Methods("POST")
-	// r.HandleFunc("/api/v1/items/{item}", GetItemHandler).Methods("GET")
+	r.HandleFunc("/api/v1/items/{item}", func(w http.ResponseWriter, r *http.Request) {
+		GetItemHandler(w, r, db)
+	}).Methods("GET")
 	// r.HandleFunc("/api/v1/items/{item}", UpdateItemHandler).Methods("PUT")
 
 	//h := http.Handle("/introspect", http.StripPrefix("/introspect", boltd.NewHandler(mydb)))
