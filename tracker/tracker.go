@@ -22,7 +22,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/boltdb/bolt"
@@ -43,7 +42,7 @@ type Project struct {
 }
 
 type Item struct {
-	Id          int    `json:"_id"`
+	Id          int    `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
@@ -231,6 +230,34 @@ func UpdateProjectHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 	w.Write(out)
 }
 
+func GetAllItemsHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var pl []Item
+
+	db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("item"))
+		b.ForEach(func(k, v []byte) error {
+			log.Printf("key=%s, value=%s\n", k, v)
+			var p Item
+			json.Unmarshal(v, &p)
+			pl = append(pl, p)
+			return nil
+		})
+		return nil
+	})
+
+	t := make(map[string][]Item)
+	t["items"] = pl
+	out, err := json.Marshal(t)
+	if err != nil {
+		log.Fatal("Unable to marhal")
+	}
+	log.Printf("Out: %s", out)
+	w.Write(out)
+	//w.Write([]byte(`{"items":[{"id":"1","title":"a2","description":"aa"}]}`))
+}
+
 func CreateItemHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 	var pl []Item
 	t1 := make(map[string][]Item)
@@ -254,12 +281,15 @@ func CreateItemHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 			log.Printf("Empty items")
 			j = 1
 		} else {
-			i, _ := strconv.Atoi(string(k))
-			j = i + 1
+			log.Printf("Non-Empty items")
+			i := k[0]
+			j = int(i) + 1
+			log.Printf("i: %+v k: %+v k(T): %T j: %+v ", i, k, k, j)
 		}
 		item.Id = j
 		p1, _ := json.Marshal(item)
-		err := b.Put(k, []byte(p1))
+		log.Printf("p1: %#v", string(p1))
+		err := b.Put([]byte(string(j)), []byte(p1))
 		return err
 	})
 
@@ -295,7 +325,9 @@ func WebMain(db *bolt.DB) {
 		UpdateProjectHandler(w, r, db)
 	}).Methods("PUT")
 	// r.HandleFunc("/api/v1/projects/{project}", ArchiveProjectHandler).Methods("DELETE")
-	// r.HandleFunc("/api/v1/items", GetAllItemsHandler).Methods("GET")
+	r.HandleFunc("/api/v1/items", func(w http.ResponseWriter, r *http.Request) {
+		GetAllItemsHandler(w, r, db)
+	}).Methods("GET")
 	r.HandleFunc("/api/v1/items", func(w http.ResponseWriter, r *http.Request) {
 		CreateItemHandler(w, r, db)
 	}).Methods("POST")

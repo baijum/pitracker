@@ -1,0 +1,7 @@
+<h1 class="page-header">All Items</h1>
+<ul>
+  {{#each item in model}}
+    <li>{{#link-to 'item' item.id }}{{ item.title }}{{/link-to}} - {{ item.description }}</li>
+  {{/each}}
+</ul>
+

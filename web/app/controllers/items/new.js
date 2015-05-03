@@ -8,7 +8,13 @@ export default Ember.Controller.extend({
 	title: self.get('title'),
 	description: self.get('description')
       });
-      item.save()
+      item.save().then(function() {
+	self.transitionTo('index');
+      }, function(response) {
+	if (response.status === 409) {
+	  console.log("Item already exists");
+	}
+      });
     }
   }
 });
