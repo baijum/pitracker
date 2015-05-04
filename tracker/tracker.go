@@ -284,12 +284,14 @@ func CreateItemHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 			log.Printf("Non-Empty items")
 			i := k[0]
 			j = int(i) + 1
-			log.Printf("i: %+v k: %+v k(T): %T j: %+v ", i, k, k, j)
+			log.Printf("i: %+v k(V#): %#v k(V+): %+v k(T): %T j: %+v ", i, k, k, k, j)
 		}
 		item.Id = j
+		_ = "breakpoint"
 		p1, _ := json.Marshal(item)
-		log.Printf("p1: %#v", string(p1))
-		err := b.Put([]byte(string(j)), []byte(p1))
+		k1 := []byte(string(j))
+		log.Printf("p1: %#v, k1(V+): %+v k1(V#): %#v k1(T): %T", string(p1), k1, k1, k1)
+		err := b.Put(k1, []byte(p1))
 		return err
 	})
 
@@ -338,6 +340,49 @@ func GetItemHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
 	w.Write(out)
 }
 
+func UpdateItemHandler(w http.ResponseWriter, r *http.Request, db *bolt.DB) {
+	vars := mux.Vars(r)
+	pd := vars["item"]
+
+	var pl []Item
+
+	var t map[string]Item
+	t1 := make(map[string][]Item)
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&t)
+	if err != nil {
+		log.Fatal("Unable to decode body")
+	}
+	_ = "breakpoint"
+	item := t["item"]
+	item.Id, _ = strconv.Atoi(pd)
+	log.Printf("Item: %#v\n pd: %+v", item, pd)
+
+	p1, _ := json.Marshal(item)
+
+	k1 := []byte(string(item.Id))
+	log.Printf("p1: %#v, k1(V+): %+v k1(V#): %#v k1(T): %T", string(p1), k1, k1, k1)
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("item"))
+		b.Delete(k1)
+		err := b.Put(k1, []byte(p1))
+		return err
+	})
+
+	pl = append(pl, item)
+
+	t1["items"] = pl
+
+	out, err := json.Marshal(t1)
+	if err != nil {
+		log.Fatal("Unable to marhal")
+	}
+	log.Printf("Out: %s", out)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(out)
+}
+
 func init() {
 	uiDir = os.Getenv("PITRACKER_UI_DIR")
 }
@@ -366,7 +411,9 @@ func WebMain(db *bolt.DB) {
 	r.HandleFunc("/api/v1/items/{item}", func(w http.ResponseWriter, r *http.Request) {
 		GetItemHandler(w, r, db)
 	}).Methods("GET")
-	// r.HandleFunc("/api/v1/items/{item}", UpdateItemHandler).Methods("PUT")
+	r.HandleFunc("/api/v1/items/{item}", func(w http.ResponseWriter, r *http.Request) {
+		UpdateItemHandler(w, r, db)
+	}).Methods("PUT")
 
 	//h := http.Handle("/introspect", http.StripPrefix("/introspect", boltd.NewHandler(mydb)))
 
