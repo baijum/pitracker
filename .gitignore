@@ -1,0 +1,23 @@
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+# automatic backup
+*~
+
+# compiled output
+web/dist
+web/tmp
+
+# dependencies
+web/node_modules
+web/bower_components
+
+# misc
+web/.sass-cache
+web/connect.lock
+web/coverage/*
+web/libpeerconnection.log
+web/npm-debug.log
+web/testem.log
+
+# created by fresh
+tmp/
