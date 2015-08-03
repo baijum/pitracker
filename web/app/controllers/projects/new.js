@@ -6,7 +6,6 @@ export default Ember.Controller.extend({
       var self = this;
       var name = self.get('name');
       var description = self.get('description');
-      console.log(name, description)
       var project = self.store.createRecord('project', {
         name: name,
         description: description

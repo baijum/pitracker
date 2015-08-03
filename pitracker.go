@@ -76,7 +76,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(authToken))
 }
 
-func CreateProjectHandler(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+func CreateProjectHandler(w http.ResponseWriter, r *http.Request) {
 	var (
 		id int
 	)
@@ -113,7 +113,8 @@ func CreateProjectHandler(w http.ResponseWriter, r *http.Request, next http.Hand
 	w.Write(out)
 }
 
-func GetAllProjectsHandler(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+//func GetAllProjectsHandler(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+func GetAllProjectsHandler(w http.ResponseWriter, r *http.Request) {
 	//user := context.Get(r, "user")
 	var (
 		id          int
@@ -473,23 +474,23 @@ func main() {
 		},
 	})
 
+	ar := mux.NewRouter()
+
 	r.HandleFunc("/api/v1/auth", AuthHandler).Methods("POST")
-	// r.HandleFunc("/api/v1/members", GetAllMembersHandler).Methods("GET")
-	// r.HandleFunc("/api/v1/members", CreateMemberHandler).Methods("POST")
-	// r.HandleFunc("/api/v1/members/{member}", GetMemberHandler).Methods("GET")
-	r.Handle("/api/v1/projects",
-		negroni.New(negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
-			negroni.HandlerFunc(GetAllProjectsHandler))).Methods("GET")
-	r.Handle("/api/v1/projects",
-		negroni.New(negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
-			negroni.HandlerFunc(CreateProjectHandler))).Methods("POST")
-	r.HandleFunc("/api/v1/projects/{project}", GetProjectHandler).Methods("GET")
-	r.HandleFunc("/api/v1/projects/{project}", UpdateProjectHandler).Methods("PUT")
-	r.HandleFunc("/api/v1/projects/{project}", ArchiveProjectHandler).Methods("DELETE")
-	r.HandleFunc("/api/v1/items", GetAllItemsHandler).Methods("GET")
-	r.HandleFunc("/api/v1/items", CreateItemHandler).Methods("POST")
-	r.HandleFunc("/api/v1/items/{item}", GetItemHandler).Methods("GET")
-	r.HandleFunc("/api/v1/items/{item}", UpdateItemHandler).Methods("PUT")
+	ar.HandleFunc("/api/v1/projects", GetAllProjectsHandler).Methods("GET")
+	ar.HandleFunc("/api/v1/projects", CreateProjectHandler).Methods("POST")
+	// ar.HandleFunc("/api/v1/members", GetAllMembersHandler).Methods("GET")
+	// ar.HandleFunc("/api/v1/members", CreateMemberHandler).Methods("POST")
+	// ar.HandleFunc("/api/v1/members/{member}", GetMemberHandler).Methods("GET")
+	ar.HandleFunc("/api/v1/projects/{project}", GetProjectHandler).Methods("GET")
+	ar.HandleFunc("/api/v1/projects/{project}", UpdateProjectHandler).Methods("PUT")
+	ar.HandleFunc("/api/v1/projects/{project}", ArchiveProjectHandler).Methods("DELETE")
+	ar.HandleFunc("/api/v1/items", GetAllItemsHandler).Methods("GET")
+	ar.HandleFunc("/api/v1/items", CreateItemHandler).Methods("POST")
+	ar.HandleFunc("/api/v1/items/{item}", GetItemHandler).Methods("GET")
+	ar.HandleFunc("/api/v1/items/{item}", UpdateItemHandler).Methods("PUT")
+	r.PathPrefix("/api").Handler(
+		negroni.New(negroni.HandlerFunc(jwtMiddleware.HandlerWithNext), negroni.Wrap(ar)))
 	n := negroni.Classic()
 	n.UseHandler(r)
 	n.Run(":7080")
