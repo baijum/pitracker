@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,7 +15,6 @@ import (
 	"github.com/baijum/pitracker/logger"
 	"github.com/codegangsta/negroni"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
@@ -78,7 +76,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(authToken))
 }
 
-func CreateProjectHandler(w http.ResponseWriter, r *http.Request) {
+func CreateProjectHandler(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	var (
 		id int
 	)
@@ -116,12 +114,7 @@ func CreateProjectHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllProjectsHandler(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	user := context.Get(r, "user")
-	fmt.Fprintf(w, "This is an authenticated request")
-	fmt.Fprintf(w, "Claim content:\n")
-	for k, v := range user.(*jwt.Token).Claims {
-		fmt.Fprintf(w, "%s :\t%#v\n", k, v)
-	}
+	//user := context.Get(r, "user")
 	var (
 		id          int
 		name        string
@@ -487,7 +480,9 @@ func main() {
 	r.Handle("/api/v1/projects",
 		negroni.New(negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
 			negroni.HandlerFunc(GetAllProjectsHandler))).Methods("GET")
-	r.HandleFunc("/api/v1/projects", CreateProjectHandler).Methods("POST")
+	r.Handle("/api/v1/projects",
+		negroni.New(negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
+			negroni.HandlerFunc(CreateProjectHandler))).Methods("POST")
 	r.HandleFunc("/api/v1/projects/{project}", GetProjectHandler).Methods("GET")
 	r.HandleFunc("/api/v1/projects/{project}", UpdateProjectHandler).Methods("PUT")
 	r.HandleFunc("/api/v1/projects/{project}", ArchiveProjectHandler).Methods("DELETE")
