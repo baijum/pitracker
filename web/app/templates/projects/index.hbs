@@ -1,1 +1,6 @@
-{{outlet}}
+<h1 class="page-header">All Projects</h1>
+<ul>
+  {{#each model}}
+    <li>{{#link-to 'projects.project' id }}{{ name }}{{/link-to}} - {{ description }}</li>
+  {{/each}}
+</ul>
