@@ -17,6 +17,7 @@ Router.map(function() {
     this.route('new');
     this.route('item', { path: ':item_id' }, function() {
       this.route('edit');
+      this.route('comments');
     });
   });
 });
