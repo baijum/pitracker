@@ -1,1 +1,8 @@
-{{outlet}}
+<h1 class="page-header">{{ model.name }}</h1>
+<p>
+  {{ model.description }}
+</p>
+<p>
+  {{#link-to 'projects.project.edit'}}Edit{{/link-to}}
+</p>
+
